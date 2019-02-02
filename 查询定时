@@ -1,0 +1,43 @@
+#include <ioCC2530.h>
+#define uint unsigned int 
+#define uchar unsigned char 
+
+#define LED1 P1_0
+#define LED2 P1_1
+void Delayms(uint xms);
+void InitLed(void);
+void InitT1();
+
+void Delayms(uint xms){
+  uint i,j;
+  for(i=xms;i>0;i--)
+    for(j=587;j>0;j--);
+}
+
+void InitLed(void){
+  P1DIR |= 0x03;
+  LED1=1;
+  LED2=1;
+}
+
+void InitT1(){
+  T1CTL=0x0d;
+  T1STAT = 0x21;
+}
+
+void main(void){
+  uchar count=0;
+  InitLed();
+  InitT1();
+  while(1){
+    if(IRCON>0){
+      IRCON=0;
+
+      if(++count>=1){
+        count=0;
+        LED1=!LED1;
+        LED2=!LED2;
+      }
+    }
+  }
+}
