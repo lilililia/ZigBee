@@ -1,0 +1,44 @@
+#include <ioCC2530.h>
+#define uint unsigned int 
+#define uchar unsigned char 
+
+#define LED1 P1_0
+#define KEY1 P0_1
+
+void Delayms(uint);
+void InitLed(void);
+void KeyInit();
+uchar KeyValue =0;
+
+void Delayms(uint xms){
+  uint i,j;
+  for(i=xms;i>0;i--) 
+   for(j=587;j>0;j--); 
+}
+
+void InitLed(void){
+  P1DIR |=0x01;
+  LED1=1;
+}
+
+void InitKey(){
+  P0IEN |=0x2;
+   PICTL |= 0X2; // 下降沿触发   
+  IEN1|=0x20;
+  P0IFG =0X00;
+  EA=1;
+}
+
+#pragma vector = P0INT_VECTOR
+__interrupt void P0_ISR(void){
+  Delayms(10);
+  LED1=~LED1;
+    P0IFG=0;
+    P0IF=0;
+}
+
+void main(void){
+  InitLed();
+  InitKey();
+  while(1){}
+}
