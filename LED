@@ -15,7 +15,7 @@ uchar KeyScan(void );
 uchar Keyvalue =0;
 uint KeyTouchtimes =0;
 void Delay(uint n){
-  uint i ;
+  uint i;
   for(i=0;i<n;i++);
   for(i=0;i<n;i++);
   for(i=0;i<n;i++);
