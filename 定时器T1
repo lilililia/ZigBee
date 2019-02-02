@@ -1,0 +1,40 @@
+#include <ioCC2530.h>
+#define uint unsigned int 
+#define uchar unsigned char 
+
+#define LED1 P1_0
+#define LED2 P1_1
+#define LED3 P0_4
+
+uint counter=0;
+uint LEDFlag;
+
+void InitialT1test(void);
+
+void InitialT1test(void){
+  P1DIR = 0x03;
+  P0DIR = 0x10;
+  LED1=LED2=LED3=1;
+  T1CTL = 0x05;
+  T1STAT=0x21;
+}
+
+void main(){
+  InitialT1test();
+  while (1){
+    if(IRCON>0){
+      IRCON=0;
+      counter++;
+      if(counter ==15){
+        counter =0;
+        LEDFlag = !LEDFlag;
+      }
+    }
+    if(LEDFlag){
+      LED2=LED1;
+      LED3=!LED2;
+      LED1=!LED1;
+        LEDFlag=!LEDFlag;
+    }
+  }
+}
