@@ -1,0 +1,35 @@
+#include <ioCC2530.h>
+typedef unsigned char uchar;
+typedef unsigned int uint ;
+
+#define LED1 P1_0
+
+uint count;
+
+void InitLed(void){
+  P1DIR |=0x01;
+  LED1=1;
+}
+
+void InitT3(){
+  T3CTL |=0X08;
+  T3IE =1;
+  T3CTL |=0XE0;
+  T3CTL &=~0X03;
+  T3CTL |=0X10;
+  EA=1;
+}
+#pragma vector = T3_VECTOR 
+__interrupt void T3_ISR(void)  { 
+  IRCON =0X00;
+  if(count++>245){
+    count =0;
+    LED1=~LED1;
+  }
+}
+void main(void){
+  InitLed();
+  InitT3();
+  while(1){
+  };
+}
