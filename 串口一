@@ -1,0 +1,72 @@
+#include <iocc2530.h>
+ #include <string.h> 
+ 
+#define uint unsigned int 
+#define uchar unsigned char 
+ 
+//定义控制灯的端口 
+
+#define LED1 P1_0
+#define LED2 P1_1 
+#define LED3 P0_4 //函数声明 
+void Delay(uint); 
+void initUARTSEND(void); 
+void UartTX_Send_String(char *Data,int len); 
+ 
+char Txdata[25]="HELLO! zigbee!\r\n";
+ /**************************************************************** 延时函数 ****************************************************************/ 
+ 
+void Delay(uint n) 
+{ 
+	uint i;
+ 	for(i=0;i<n;i++);
+	 for(i=0;i<n;i++);
+	 for(i=0;i<n;i++); 
+	for(i=0;i<n;i++);
+	 for(i=0;i<n;i++);  }
+
+void initUARTSEND(void) { 
+ 
+CLKCONCMD &= ~0x40; //设置系统时钟源为 32MHZ 晶振  
+while(CLKCONSTA & 0x40); //等待晶振稳定 
+ CLKCONCMD &= ~0x47; //设置系统主时钟频率为 32MHZ 
+ 
+ 
+PERCFG = 0x00; //位置 1 P0 口  
+P0SEL = 0x0c; //P0_2,P0_3 用作串口 0000 1100 
+ P2DIR &= ~0XC0;  //P0 优先作为 UART0 
+ U0CSR |= 0x80; //UART 方式 1000 0000  
+U0GCR |= 8; //U0GCR.BAUD_E  
+U0BAUD |= 59; //波特率设为 9600 UxBAUD.BAUD_M  
+UTX0IF = 0;   //UART0 TX 中断标志初始置位 0  }  
+}
+void UartTX_Send_String(char *Data ,int len)
+{
+  int j;
+  for(j=0;j<len;j++)   
+  {    
+  U0DBUF = *Data++;    
+  while(UTX0IF == 0);     
+  UTX0IF = 0;  
+  } }
+
+ 
+void main(void) {
+  uchar i;       
+  P1DIR = 0x03;    //P1控制LED  
+  initUARTSEND();               
+  LED1 = 1;                                //关LED     
+  LED3 = 1;                                //关LED 
+  LED2 = 0;  
+  UartTX_Send_String(Txdata,25);            
+      for(i=0;i<30;i++)Txdata[i]=' ';         
+   strcpy(Txdata,"HELLO! zigbee!\r\n");              //将UART0 TX test赋给Txdata; 
+ while(1)  
+ {
+    UartTX_Send_String(Txdata,strlen(Txdata)); //串口发送数据 
+    Delay(50000);                                          //延时            
+    LED2=!LED2;                                           //D2灯在闪，标志发送状态       
+    Delay(50000);          
+    Delay(50000); 
+ } 
+}
