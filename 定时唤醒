@@ -1,0 +1,96 @@
+#include <ioCC2530.h>
+#include <string.h>
+
+#define uint unsigned int 
+#define uchar unsigned char
+
+#define LED1 P1_0
+#define LED2 P1_1
+#define LED3 P0_4
+
+void initUART0(void);
+void InitialAD(void);
+void UartTX_Send_String(uchar *Data,int len);
+
+uchar Recdata[30]="我喜欢你!\n";
+uchar RXTXflag =1 ;
+uchar temp;
+uint datanumber =0;
+uint stringlen;
+
+void UartTX_Send_String(uchar *Data,int len){
+  int j;
+  for(j=0;j<len;j++){
+    U0DBUF= *Data++;
+    while (UTX0IF==0);
+    UTX0IF=0;
+  }
+}
+
+void initUART0(void){
+  CLKCONCMD &=~0x40;
+  while (CLKCONSTA &0X40);
+  CLKCONCMD &=~0X47;
+  
+  PERCFG=0X00;
+  P0SEL = 0X0C;
+  P2DIR &=~0XC0;
+  
+  U0CSR |= 0X80;
+  U0GCR |= 8;
+  U0BAUD |= 59;
+  UTX0IF=1;
+  
+  U0CSR |=0X40;
+  IEN0 |=0X84;
+}
+
+void main(void){
+  P1DIR = 0X03;
+  P0DIR = 0X10;
+  LED1=1;
+  LED2=1;
+  LED3=1;
+  initUART0();
+  stringlen=strlen((char*)Recdata);
+  UartTX_Send_String(Recdata,stringlen);
+  while (1){
+    if(RXTXflag==1){
+      if(temp!=0){
+        LED2=0;
+        if((temp!='#')&&(datanumber<50)){
+          Recdata[datanumber++]=temp;
+        }
+        else{
+          RXTXflag=3;
+        }
+        if(datanumber==50)
+          RXTXflag=3;
+          
+          temp=0;
+        }
+      }
+      if(RXTXflag==3){
+        UartTX_Send_String("send:",5);
+        
+        LED1=0;
+        
+        U0CSR &=~0x40;
+        UartTX_Send_String(Recdata,datanumber);
+        UartTX_Send_String("\r\n",2);
+        U0CSR |= 0x40;
+        
+        RXTXflag=1;
+        
+        datanumber =0;
+        LED1=1;
+        LED2=1;
+        memset(Recdata,0,sizeof(Recdata));
+      }
+    }
+}
+  #pragma vector = URX0_VECTOR 
+   __interrupt void UART0_ISR(void) {
+   URX0IF = 0;
+    temp=U0DBUF;
+   }
